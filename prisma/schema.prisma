@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  userId         Int          @id @default(autoincrement())
+  userUuid       String       @unique
+  userName       String       @unique
+  email          String       @unique
+  profilePicture String?
+  createdAt      DateTime
+  deleted        Boolean
+  password       String
+  boards         boards[]     @relation("UserBoards")
+  boardsuser     boardsuser[]
+}
+
+model boards {
+  boardId    Int          @id @default(autoincrement())
+  boardUuid  String       @unique
+  title      String
+  ownerId    Int
+  createdAt  DateTime
+  updatedAt  DateTime
+  deleted    Boolean
+  boardlist  boardlist[]
+  users      users        @relation("UserBoards", fields: [ownerId], references: [userId])
+  boardsuser boardsuser[]
+}
+
+model lists {
+  listId    Int         @id @default(autoincrement())
+  listUuid  String      @unique
+  title     String
+  createdAt DateTime
+  updatedAt DateTime
+  deleted   Boolean
+  boardlist boardlist[]
+  listcard  listcard[]
+}
+
+model cards {
+  cardId    Int        @id @default(autoincrement())
+  cardUuid  String     @unique
+  title     String
+  content   String?
+  startDate String?
+  dueDate   DateTime?
+  listcard  listcard[]
+}
+
+model listcard {
+  listCardId Int      @id @default(autoincrement())
+  listId     Int
+  cardId     Int
+  createdAt  DateTime
+  updatedAt  DateTime
+  cards      cards    @relation(fields: [cardId], references: [cardId])
+  lists      lists    @relation(fields: [listId], references: [listId])
+}
+
+model boardlist {
+  boardListId Int    @id @default(autoincrement())
+  boardId     Int
+  listId      Int
+  boards      boards @relation(fields: [boardId], references: [boardId])
+  lists       lists  @relation(fields: [listId], references: [listId])
+}
+
+model roles {
+  roleId          Int          @id @default(autoincrement())
+  roleDescription String
+  createdAt       DateTime
+  updatedAt       DateTime
+  boardsuser      boardsuser[]
+}
+
+model boardsuser {
+  boardUserId Int      @id @default(autoincrement())
+  boardId     Int
+  userId      Int
+  roleId      Int
+  createdAt   DateTime
+  updatedAt   DateTime
+  boards      boards   @relation(fields: [boardId], references: [boardId])
+  roles       roles    @relation(fields: [roleId], references: [roleId])
+  users       users    @relation(fields: [userId], references: [userId])
+}
